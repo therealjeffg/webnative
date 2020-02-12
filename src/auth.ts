@@ -1,55 +1,41 @@
 import CBOR from 'cbor-js'
 import { toUint8Array, fromUint8Array } from './utils'
 
-const EDDSA_ALG = -8
-
 interface AuthenticatorOptions {
   name: string,
   id: string,
   alg?: number,
   timeout?: number,
 }
-
-interface User {
-  id: string,
-  name: string,
-  displayName: string,
-}
-
 export interface PublicKeyAttestationCredential extends PublicKeyCredential {
     readonly response: AuthenticatorAttestationResponse;
 }
 
 export class Authenticator {
-  opts: AuthenticatorOptions
+  getChallenge: (username: string) => Promise<RegisterChallenge>
+  // opts: AuthenticatorOptions
 
-  constructor(opts: AuthenticatorOptions){
-    this.opts = opts
+  constructor(getChallenge: GetChallengeFn){
+    this.getChallenge = getChallenge
   }
 
-  async userWithChallenge(user: User, challenge: string) {
-    return createCredential(this.opts, user, challenge)
+  async user(username: string) {
+    const challenge = await this.getChallenge(username)
+    return credentialFromChallenge(challenge)
   }
-
 }
 
-export async function createCredential(auth: AuthenticatorOptions, user: User, challenge: string) {
+export async function credentialFromChallenge(challenge: RegisterChallenge) {
   const publicKeyCredentialCreationOptions = {
-    challenge: toUint8Array(challenge),
-    rp: {
-        name: auth.name,
-        id: auth.id,
-    },
+    challenge: toUint8Array(challenge.challenge),
+    rp: challenge.rp, 
+    pubKeyCredParams: challenge.pubKeyCredParams,
+    timeout: challenge.timeout,
     user: {
-        id: toUint8Array(user.id),
-        name: user.name,
-        displayName: user.displayName,
-    },
-    pubKeyCredParams: [{
-      alg: auth.alg || EDDSA_ALG,
-      type: "public-key" as const
-    }],
-    timeout: auth.timeout || 60000,
+      id: toUint8Array(challenge.user.id),
+      name: challenge.user.name,
+      displayName: challenge.user.displayName,
+    }
   };
 
   return navigator.credentials.create({

@@ -1,7 +1,13 @@
-// Import here Polyfills if needed. Recommended core-js (npm i -D core-js)
-// import "core-js/fn/array.find"
-// ...
+import { Authenticator } from './auth'
+import { getChallengeFn } from './auth/mock'
 
-console.log('Hello world!')
+const run = async() => {
+  const getChallenge = getChallengeFn({})
+  const auth = new Authenticator(getChallenge)
+  const cred = await auth.user("dholms")
+  console.log(cred)
+}
+
+run()
 
 export const test = true
