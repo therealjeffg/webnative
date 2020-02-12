@@ -1,5 +1,7 @@
 import CBOR from 'cbor-js'
-import { toUint8Array, fromUint8Array } from './utils'
+import { toUint8Array, fromUint8Array, uint8ArrayToUint16 } from './utils'
+
+const CRED_ID_START = 55
 
 interface AuthenticatorOptions {
   name: string,
@@ -38,46 +40,39 @@ export async function credentialFromChallenge(challenge: RegisterChallenge) {
     }
   };
 
-  return navigator.credentials.create({
+  const cred = await navigator.credentials.create({
     publicKey: publicKeyCredentialCreationOptions
   });
+  return cred as PublicKeyAttestationCredential
 }
 
-export function decodeCredential(credential: PublicKeyAttestationCredential) {
+export function decodeCredential(credential: PublicKeyAttestationCredential): DecodedCredential {
   // decode the clientDataJSON into a utf-8 string
+  const { rawId, response} = credential;
   const utf8Decoder = new TextDecoder('utf-8');
-  const decodedClientData = utf8Decoder.decode(credential.response.clientDataJSON)
 
-  // parse the string as an object
-  const clientDataObj = JSON.parse(decodedClientData);
-  console.log("client data: ", clientDataObj)
+  const decodedClientData = utf8Decoder.decode(response.clientDataJSON)
+  const decodedAttestationObj = CBOR.decode(response.attestationObject);
 
-  const decodedAttestationObj = CBOR.decode(credential.response.attestationObject);
-  console.log(decodedAttestationObj);
+  const { authData } = decodedAttestationObj;
+  const credIdLen = uint8ArrayToUint16(authData.slice(53, CRED_ID_START));
 
-  const { authData } = decodedAttestationObj
-  const dataView = new DataView( new ArrayBuffer(2));
+  const publicKeyStart = CRED_ID_START + credIdLen;
 
-  const idLenBytes = authData.slice(53, 55);
-  idLenBytes.forEach(
-      (value: any, index:any) => dataView.setUint8(
-          index, value));
+  const credentialId = fromUint8Array(authData.slice(CRED_ID_START, publicKeyStart));
 
-  const credentialIdLength = dataView.getUint16(0);
+  const publicKeyBytes = authData.slice(publicKeyStart);
+  const publicKeyObject = CBOR.decode(publicKeyBytes.buffer); 
 
-  // get the credential ID
-  const credentialId = authData.slice(55, 55 + credentialIdLength);
-  console.log("credential id: ", credentialId)
-
-  // get the public key object
-  const publicKeyBytes = authData.slice(
-      55 + credentialIdLength);
-
-  // the publicKeyBytes are encoded again as CBOR
-  const publicKeyObject = CBOR.decode(
-      publicKeyBytes.buffer);
-
-  console.log(publicKeyObject)
-  console.log("PUBLIC KEY: ", fromUint8Array(publicKeyObject[-2]))
-
+  return {
+    rawId,
+    clientData: JSON.parse(decodedClientData),
+    credentialId,
+    keyInfo: {
+      pubkey: fromUint8Array(publicKeyObject[-2]),
+      keyType: publicKeyObject[1],
+      keyAlg: publicKeyObject[3],
+      keyCurve: publicKeyObject[-1],
+    }
+  }
 }

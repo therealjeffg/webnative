@@ -1,3 +1,4 @@
+type GetChallengeFn = (username: string) => Promise<RegisterChallenge>
 interface RegisterChallengeOpts {
   id?: string
   name?: string
@@ -6,9 +7,9 @@ interface RegisterChallengeOpts {
 }
 
 interface RegisterChallenge {
-  challenge: string,
-  rp: PublicKeyCredentialRpEntity,
-  pubKeyCredParams: PublicKeyCredentialParameters[],
+  challenge: string
+  rp: PublicKeyCredentialRpEntity
+  pubKeyCredParams: PublicKeyCredentialParameters[]
   timeout?: number
   user: {
     id: string
@@ -17,4 +18,22 @@ interface RegisterChallenge {
   }
 }
 
-type GetChallengeFn = (username: string) => Promise<RegisterChallenge>
+interface DecodedCredential {
+  rawId: ArrayBuffer
+  clientData: ClientData
+  credentialId: string
+  keyInfo: KeyInfo
+}
+
+interface ClientData {
+  challenge: string
+  origin: string
+  type: string
+}
+
+interface KeyInfo {
+  pubkey: string
+  keyType: number
+  keyAlg: number
+  keyCurve: number
+}

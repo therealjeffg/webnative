@@ -1,13 +1,14 @@
-import crypto from 'crypto'
+// import crypto from 'crypto'
 
 const EDDSA_ALG = -8
 
 function randomBase64(len = 32){
-  if(crypto && crypto.randomBytes){
-    return crypto.randomBytes(len).toString('base64')
-  }else{
-    return "asodfiu"
-  }
+  return "asdfoiu"
+  // if(crypto && crypto.randomBytes){
+  //   return crypto.randomBytes(len).toString('base64')
+  // }else{
+  //   return "asodfiu"
+  // }
 }
 
 export function getChallengeFn(opts: RegisterChallengeOpts): GetChallengeFn {
