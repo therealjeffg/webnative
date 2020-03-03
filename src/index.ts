@@ -1,4 +1,5 @@
-import { Authenticator, decodeCredential } from './auth'
+import { Authenticator } from './auth/client'
+import { decodeCredential } from './auth/server'
 import { getChallengeFn } from './auth/mock'
 
 const run = async() => {
