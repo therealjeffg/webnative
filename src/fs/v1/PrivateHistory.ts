@@ -1,8 +1,10 @@
-import MMPT from "../protocol/private/mmpt"
+import MMPT from '../protocol/private/mmpt'
 import { BareNameFilter } from '../protocol/private/namefilter'
+import { Comparison } from './comparison'
 import { DecryptedNode, Revision } from "../protocol/private/types"
 import { Maybe } from '../../common'
 import { Metadata } from '../metadata'
+import * as comparison from './comparison'
 import * as protocol from '../protocol'
 
 
@@ -40,6 +42,26 @@ export default class PrivateHistory {
   //   const revision = this.node.header?.revision
   //   return (revision && await this._getRevision(revision + n)) || null
   // }
+
+  /**
+   * Compare this history against another.
+   */
+  compare(b: PrivateHistory) {
+    const a = this
+    const revA = a.node.header?.revision
+    const revB = b.node.header?.revision
+
+    if (!revA && !revB) return comparison.inSync
+    if (!revA) return comparison.behindRemote
+    if (!revB) return comparison.aheadOfRemote
+
+    //
+  }
+
+  /**
+   * @internal
+   */
+  _compare() {}
 
   /**
    * Get a version before a given timestamp.
