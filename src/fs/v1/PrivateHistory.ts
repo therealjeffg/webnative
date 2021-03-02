@@ -55,13 +55,20 @@ export default class PrivateHistory {
     if (!revA) return comparison.behindRemote
     if (!revB) return comparison.aheadOfRemote
 
-    //
+    return this._compare()
   }
 
   /**
    * @internal
    */
-  _compare() {}
+  _compare(headA, a, headB, b) {
+    const revA = a.node.header?.revision
+    const revB = b.node.header?.revision
+
+    if (!revA && !revB) return comparison.inSync
+    if (!revA) return comparison.divergedAt("Qmc5m94Gu7z62RC8waSKkZUrCCBJPyHbkpmGzEePxy2oXJ")
+    if (!revB) return comparison.divergedAt("Qmc5m94Gu7z62RC8waSKkZUrCCBJPyHbkpmGzEePxy2oXJ")
+  }
 
   /**
    * Get a version before a given timestamp.
