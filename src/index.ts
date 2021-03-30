@@ -32,11 +32,11 @@ export enum Scenario {
 // STATE
 
 
-export type State
+export type State<FS>
   = NotAuthorised
-  | AuthSucceeded
+  | AuthSucceeded & FS
   | AuthCancelled
-  | Continuation
+  | Continuation & FS
 
 export type NotAuthorised = {
   scenario: Scenario.NotAuthorised
@@ -53,8 +53,6 @@ export type AuthSucceeded = {
   newUser: boolean
   throughLobby: true
   username: string
-
-  fs?: FileSystem
 }
 
 export type AuthCancelled = {
@@ -74,8 +72,6 @@ export type Continuation = {
   newUser: false,
   throughLobby: false
   username: string
-
-  fs?: FileSystem
 }
 
 
@@ -103,6 +99,16 @@ export type Continuation = {
  * See `loadFileSystem` if you want to load the user's file system yourself.
  * NOTE: Only works on the main/ui thread, as it uses `window.location`.
  */
+ export async function initialise(
+  options: {
+    permissions?: Permissions
+
+    // Options
+    autoRemoveUrlParams?: boolean
+    loadFileSystem?: true
+    rootKey?: string
+  }
+): Promise<State<{ fs: FileSystem }>>;
 export async function initialise(
   options: {
     permissions?: Permissions
@@ -112,7 +118,7 @@ export async function initialise(
     loadFileSystem?: boolean
     rootKey?: string
   }
-): Promise<State> {
+): Promise<State<{}>> {
   options = options || {}
 
   const permissions = options.permissions || null
@@ -257,7 +263,7 @@ function scenarioAuthSucceeded(
   newUser: boolean,
   username: string,
   fs: FileSystem | undefined
-): AuthSucceeded {
+): AuthSucceeded & { fs: typeof fs } {
   return {
     scenario: Scenario.AuthSucceeded,
     permissions,
@@ -288,7 +294,7 @@ function scenarioContinuation(
   permissions: Maybe<Permissions>,
   username: string,
   fs: FileSystem | undefined
-): Continuation {
+): Continuation & { fs : typeof fs } {
   return {
     scenario: Scenario.Continuation,
     permissions,
