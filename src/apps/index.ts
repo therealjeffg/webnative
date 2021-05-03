@@ -14,13 +14,16 @@ export type App = {
 
 /**
  * Get A list of all of your apps and their associated domain names
+ *
+ * Will throw `Error("Could not find your local UCAN")`, if permissions
+ * to access all apps (`"*"`) can't be found.
  */
 export async function index(): Promise<Array<App>> {
   const apiEndpoint = setup.endpoints.api
 
   const localUcan = await ucanInternal.lookupAppUcan("*")
   if (localUcan === null) {
-    throw "Could not find your local UCAN"
+    throw new Error("Could not find your local UCAN")
   }
 
   const jwt = ucan.encode(await ucan.build({
@@ -47,6 +50,10 @@ export async function index(): Promise<Array<App>> {
 /**
  * Creates a new app, assigns an initial subdomain, and sets an asset placeholder
  *
+ * Will throw
+ *  - `Error("Could not find your local UCAN")`, if permission to create apps can't be found
+ *  - `Error("An app already exists at " + domain)`, if the app name is already taken
+ *
  * @param subdomain Subdomain to create the fission app with
  */
 export async function create(
@@ -56,7 +63,7 @@ export async function create(
 
   const localUcan = await ucanInternal.lookupAppUcan("*")
   if (localUcan === null) {
-    throw "Could not find your local UCAN"
+    throw new Error("Could not find your local UCAN")
   }
 
   const jwt = ucan.encode(await ucan.build({
@@ -76,8 +83,13 @@ export async function create(
       'authorization': `Bearer ${jwt}`
     }
   })
-  const data = await response.json();
-  return { domain: data }
+
+  if (200 <= response.status && response.status < 300) {
+    const data = await response.json()
+    return { domain: data }
+  } else {
+    throw new Error(await response.text())
+  }
 }
 
 /**
@@ -126,6 +138,9 @@ export async function deleteByDomain(
 /**
  * Updates an app by CID
  *
+ * Will throw `Error("Could not find your local UCAN")`, if permissions
+ * to change the given app domain can't be found.
+ *
  * @param subdomain Subdomain to create the fission app with
  */
 export async function publish(
@@ -136,13 +151,13 @@ export async function publish(
 
   const localUcan = await ucanInternal.lookupAppUcan(domain)
   if (localUcan === null) {
-    throw "Could not find your local UCAN"
+    throw new Error("Could not find your local UCAN")
   }
 
   const jwt = ucan.encode(await ucan.build({
     audience: await api.did(),
     issuer: await did.ucan(),
-    proof: localUcan, 
+    proof: localUcan,
     potency: null
   }))
 
