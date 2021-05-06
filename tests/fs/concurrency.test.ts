@@ -2,6 +2,43 @@ import { loadWebnativePage } from "../helpers/page"
 
 
 describe("FS", () => {
+  async function privatePathsCreated(paths) {
+    const fs = await webnative.fs.empty({
+      localOnly: true,
+      permissions: { fs: { private: [{ directory: [] }] } }
+    })
+
+    await Promise.all(paths.map(path => fs.write(path, "asdf")))
+
+    return await filesAt(["private"])
+
+    // Helper function. Works similar to unix's tree function
+    async function filesAt(path) {
+      let paths = []
+      for (const [key, elem] of Object.entries(await fs.ls({ directory: path }))) {
+        if (elem.isFile) {
+          paths.push({ file: [...path, key] })
+        } else {
+          paths = paths.concat(await filesAt([...path, key]))
+        }
+      }
+      return paths
+    }
+  }
+
+  it("performs concurrent file additions", async () => {
+    await loadWebnativePage()
+
+    const toBeCreated = [
+      { file: ["private", "0", "0", "file.txt"] },
+      { file: ["private", "0", "1", "file.txt"] },
+    ]
+
+    const createdPaths = await page.evaluate(privatePathsCreated, toBeCreated)
+
+    expect(createdPaths).toEqual(toBeCreated)
+  })
+
   it("perform actions concurrently", async () => {
     await loadWebnativePage()
 
@@ -15,7 +52,7 @@ describe("FS", () => {
         }
       })
 
-      const amount = 2
+      const amount = 50
 
       let paths = []
 
@@ -49,7 +86,7 @@ describe("FS", () => {
       }
     })
 
-    const amount = 2
+    const amount = 50
 
     let contents = []
 
