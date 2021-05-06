@@ -8,35 +8,56 @@ describe("FS", () => {
     const string = await page.evaluate(async () => {
       const wn = webnative
 
-      const fs = await new wn.fs.empty({
+      const fs = await wn.fs.empty({
         localOnly: true,
         permissions: {
-          fs: { private: [ wn.path.root() ] }
+          fs: { private: [wn.path.root()] }
         }
       })
 
-      const pathA = wn.path.file(wn.path.Branch.Private, "a")
-      const pathB = wn.path.file(wn.path.Branch.Private, "b")
-      const pathC = wn.path.file(wn.path.Branch.Private, "c", "foo")
+      const amount = 2
 
-      await Promise.all([
-        fs.write(pathA, "x")
-          .then(_ => fs.write(pathA, "y"))
-          .then(_ => fs.write(pathA, "z")),
+      let paths = []
 
-        fs.write(pathB, "1")
-          .then(_ => fs.write(pathB, "2")),
+      for (const i of Array(amount).keys()) {
+        const num = `${i + 10}`
+        let digits = []
+        for (const i of Array(num.length).keys()) {
+          digits.push(num.charAt(i))
+        }
+        paths.push(wn.path.file(wn.path.Branch.Private, ...digits, "file.txt"))
+      }
 
-        fs.write(pathC, "bar"),
-      ])
+      await Promise.all(paths.map((path, index) => fs.write(path, `${index}`)))
 
-      return [
-        await fs.read(pathA),
-        await fs.read(pathB),
-        await fs.read(pathC)
-      ].join("")
+      try {
+        const files = await Promise.all(paths.map(path => fs.read(path)))
+        return files.join(",")
+      } catch (e) {
+        async function tree(path) {
+          let dir = {}
+          for (const [key, elem] of Object.entries(await fs.ls({ directory: path }))) {
+            if (elem.isFile) {
+              dir[key] = "file"
+            } else {
+              dir[key] = await tree([...path, key])
+            }
+          }
+          return dir
+        }
+        throw new Error(`${e.message}.\nTree:\n${JSON.stringify(await tree(["private"]), null, 2)}`)
+      }
     })
 
-    expect(string).toEqual([ "z", "2", "bar" ].join(""))
+    const amount = 2
+
+    let contents = []
+
+    for (const i of Array(amount).keys()) {
+      contents.push(`${i}`)
+    }
+
+    expect(string).toEqual(contents.join(","))
   })
+
 });
