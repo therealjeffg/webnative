@@ -24,7 +24,7 @@ abstract class BaseTree implements Tree, UnixTree {
   async ls(path: Path): Promise<BaseLinks> {
     const dir = await this.get(path)
     if (dir === null) {
-      throw new Error("Path does not exist")
+      throw new Error(`Path does not exist: ${pathing.log(path)}`)
     } else if (check.isFile(dir)) {
       throw new Error('Can not `ls` a file')
     }
@@ -34,7 +34,7 @@ abstract class BaseTree implements Tree, UnixTree {
   async cat(path: Path): Promise<FileContent> {
     const file = await this.get(path)
     if (file === null) {
-      throw new Error("Path does not exist")
+      throw new Error(`Path does not exist: ${pathing.log(path)}`)
     } else if (!check.isFile(file)) {
       throw new Error('Can not `cat` a directory')
     }
