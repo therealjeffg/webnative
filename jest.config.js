@@ -11,5 +11,5 @@ module.exports = {
   testRegex: '(/tests/.*\\.test|\\.(test|spec))\\.(ts|tsx|js)$',
   testTimeout: 120000,
 
-  setupFiles: ['./src/setup/jest.ts']
+  setupFiles: []
 }

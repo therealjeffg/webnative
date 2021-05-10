@@ -1,4 +1,5 @@
-import * as base58 from 'base58-universal/main.js'
+// @ts-ignore
+import * as base58 from 'base58-universal'
 
 import * as crypto from './crypto'
 import * as utils from 'keystore-idb/utils'

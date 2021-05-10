@@ -16,11 +16,14 @@ export const add = async (content: FileContent, key: Maybe<string>): Promise<Add
   const normalized = isBlob(content) ? await blob.toBuffer(content) : content
   const encoded = cbor.encode(normalized)
   const toAdd = isJust(key) ? await crypto.aes.encrypt(encoded, key) : encoded
-  return basic.add(toAdd)
+  const addResult = await basic.add(toAdd)
+  console.log("Added", addResult.cid, key, toAdd.length)
+  return addResult
 }
 
 export const catAndDecode = async (cid: CID, key: Maybe<string>): Promise<unknown> => {
   const buf = await basic.catBuf(cid)
   const toDecode = isJust(key) ? await crypto.aes.decrypt(buf, key) : buf
+  console.log("Reading", cid, key, toDecode.length)
   return cbor.decode(toDecode)
 }

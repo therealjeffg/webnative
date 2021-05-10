@@ -28,7 +28,7 @@
   "homepage": "https://guide.fission.codes",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=10.21.0"
+    "node": ">=15"
   },
   "scripts": {
     "docs": "rimraf docs && typedoc && typedoc --entryPoints ./src/fs --out docs/fs",
@@ -67,7 +67,7 @@
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^11.1.0",
     "@types/jest": "^26.0.20",
-    "@types/node": "^13.7.4",
+    "@types/node": "^15.0.2",
     "@types/throttle-debounce": "^2.1.0",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
     "@typescript-eslint/parser": "^3.10.1",
