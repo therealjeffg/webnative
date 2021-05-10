@@ -1758,11 +1758,6 @@
   resolved "https://registry.yarnpkg.com/@types/throttle-debounce/-/throttle-debounce-2.1.0.tgz#1c3df624bfc4b62f992d3012b84c56d41eab3776"
   integrity sha512-5eQEtSCoESnh2FsiLTxE121IiE60hnMqcb435fShf4bpLRjEu1Eoekht23y6zXS9Ts3l+Szu3TARnTsA0GkOkQ==
 
-"@types/webcrypto@^0.0.28":
-  version "0.0.28"
-  resolved "https://registry.yarnpkg.com/@types/webcrypto/-/webcrypto-0.0.28.tgz#b06160390cd000fb201f62eb02ac341ebf7e60fe"
-  integrity sha512-jzAoSUvqA+183nJO/Sc73CREQJsv+p77WJdn532GqA3YXQzlwRwHhClVa7U4O8iB2sJSR7G3v6f1mJFNkwA9YQ==
-
 "@types/yargs-parser@*":
   version "20.2.0"
   resolved "https://registry.yarnpkg.com/@types/yargs-parser/-/yargs-parser-20.2.0.tgz#dd3e6699ba3237f0348cd085e4698780204842f9"
