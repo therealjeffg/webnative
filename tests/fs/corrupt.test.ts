@@ -31,8 +31,8 @@ describe("the filsystem", () => {
     const [privatePath, privateTree] = tree.findPrivateTree(filePath)
     const subPath = path.unwrap(filePath).slice(path.unwrap(privatePath).length)
     await privateTree.write(subPath, "lol")
-    const content = await privateTree.read(subPath)
+    const file = await privateTree.read(subPath)
 
-    expect(content).toEqual("lol")
+    expect(file.content).toEqual("lol")
   })
 })
