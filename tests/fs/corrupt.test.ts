@@ -44,7 +44,7 @@ describe("the filsystem", () => {
   })
 
 
-  it("handles corrupt filesystems", async () => {
+  it("falls back on older revisions if newer ones are corrupt", async () => {
     // We initialize a "RootTree", because a "FileSystem"
     // would try to register event listeners on the global object
     // (and therefore couldn't be run in node)
@@ -96,15 +96,15 @@ describe("the filsystem", () => {
         privateTree.read(toPrivateTreePath(filePath)) as Promise<PrivateFile>,
         new Promise((resolve, reject) =>
           setTimeout(() =>
-            reject(new Error("timed out: Webnative didn't realize that the CID can't be fetched."))
+            reject(new Error("timed out: webnative didn't realize that the CID can't be fetched."))
           , 1000)
         )
       ])
     }
 
-    await expect(readRevision2OrTimeout)
-      .rejects
-      .toThrow("timed out")
+    await expect(readRevision2OrTimeout())
+      .resolves
+      .toEqual(fileRevision1)
   })
 
 })
