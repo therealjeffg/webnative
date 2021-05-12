@@ -29,6 +29,37 @@ afterAll(async () => {
 
 
 describe("the filsystem", () => {
+  it("has expected namefilter structure", async () => {
+    const rootKey = await crypto.aes.genKeyStr()
+    console.log(rootKey)
+    const tree = await RootTree.empty({ rootKey })
+
+    const filePath = path.file("private", "test.txt")
+    const [privatePath, privateTree] = tree.findPrivateTree(filePath)
+    const subPath = path.unwrap(filePath).slice(path.unwrap(privatePath).length)
+    await privateTree.write(subPath, "lol")
+    const file: PrivateFile = await privateTree.read(subPath) as any
+
+    const rootNameFilter = await namefilter.createBare(rootKey)
+    const fileNameFilter = await namefilter.addToBare(rootNameFilter, file.header.key)
+    const revisionFilter = await namefilter.addRevision(fileNameFilter, file.header.key, 1)
+
+    expect(fileNameFilter).toEqual(file.header.bareNameFilter)
+
+    const bloomFilter = namefilter.fromHex(fileNameFilter)
+    expect(bloomFilter.has(await crypto.hash.sha256Str(file.key))).toEqual(true)
+
+    const cid = await tree.mmpt.get(await namefilter.toPrivateName(revisionFilter))
+
+    expect(cid).toEqual(file.header.content)
+
+    const headerNameFilter = await namefilter.addRevision(fileNameFilter, file.key, 1)
+    const headerCID = await tree.mmpt.get(await namefilter.toPrivateName(headerNameFilter))
+
+    expect(headerCID).toEqual(privateTree.header.skeleton["test.txt"].cid)
+
+    expect(file.content).toEqual("lol")
+  })
 
   it("handles non-corrupt filesystems", async () => {
     const rootKey = await crypto.aes.genKeyStr()
@@ -97,7 +128,7 @@ describe("the filsystem", () => {
         new Promise((resolve, reject) =>
           setTimeout(() =>
             reject(new Error("timed out: webnative didn't realize that the CID can't be fetched."))
-          , 1000)
+          , 500)
         )
       ])
     }
