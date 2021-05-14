@@ -1,4 +1,4 @@
-import Ipfs, { IPFS } from "ipfs"
+import Ipfs, { IPFS } from "ipfs-core"
 
 import "../setup-node"
 
