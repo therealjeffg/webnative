@@ -9,6 +9,16 @@ globalThis.crypto = crypto.webcrypto
 
 
 describe("aes", () => {
+  it("en/decodes", async () => {
+    const message = {
+      hello: "world!"
+    }
+    const encoded: Uint8Array = Uint8Array.from(cbor.encode(message))
+    const decoded = cbor.decode(Buffer.from(encoded))
+
+    expect(decoded).toEqual(message)
+  })
+
   it("correctly encrypts & decrypts again", async () => {
     const key = await aes.makeKey({ length: SymmKeyLength.B256 })
     const keyStr = await aes.exportKey(key)

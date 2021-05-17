@@ -1,4 +1,5 @@
-import Ipfs, { IPFS } from "ipfs-core"
+import Ipfs, { IPFS, CID } from "ipfs-core"
+import multihash from 'multihashing-async'
 
 import "../setup-node"
 
@@ -15,7 +16,6 @@ import { PrivateFile } from "../../src/fs/v1/PrivateFile"
 import PrivateTree from "../../src/fs/v1/PrivateTree"
 import * as metadata from '../../src/fs/metadata'
 
-
 let ipfs: IPFS;
 
 beforeAll(async () => {
@@ -31,7 +31,6 @@ afterAll(async () => {
 describe("the filsystem", () => {
   it("has expected namefilter structure", async () => {
     const rootKey = await crypto.aes.genKeyStr()
-    console.log(rootKey)
     const tree = await RootTree.empty({ rootKey })
 
     const filePath = path.file("private", "test.txt")
@@ -44,9 +43,12 @@ describe("the filsystem", () => {
     const fileNameFilter = await namefilter.addToBare(rootNameFilter, file.header.key)
     const revisionFilter = await namefilter.addRevision(fileNameFilter, file.header.key, 1)
 
+    expect(rootNameFilter).toEqual(privateTree.header.bareNameFilter)
     expect(fileNameFilter).toEqual(file.header.bareNameFilter)
 
     const bloomFilter = namefilter.fromHex(fileNameFilter)
+    expect(bloomFilter.has(await crypto.hash.sha256Str(rootKey))).toEqual(true)
+    expect(bloomFilter.has(await crypto.hash.sha256Str(file.header.key))).toEqual(true)
     expect(bloomFilter.has(await crypto.hash.sha256Str(file.key))).toEqual(true)
 
     const cid = await tree.mmpt.get(await namefilter.toPrivateName(revisionFilter))
@@ -76,6 +78,8 @@ describe("the filsystem", () => {
 
 
   it("falls back on older revisions if newer ones are corrupt", async () => {
+
+    
     // We initialize a "RootTree", because a "FileSystem"
     // would try to register event listeners on the global object
     // (and therefore couldn't be run in node)
@@ -103,7 +107,8 @@ describe("the filsystem", () => {
     // We essentially replicate all of the logic for adding another
     // revision of our file into the filesystem, _except_ that we
     // skip adding the actual file's content: Instead, we add refer
-    // to some CID that doesn't exist in our ipfs.
+    // to some CID that doesn't exist on our ipfs node.
+    const someRandomCID = new CID(1, 'dag-pb', await multihash(Uint8Array.from([1, 33, 7]), "sha2-256"))
     const directory: PrivateTree = await privateTree.get(toPrivateTreePath(directoryPath)) as any
     const parentNameFilter = directory.header.bareNameFilter
     const key = await crypto.aes.genKeyStr()
@@ -114,9 +119,7 @@ describe("the filsystem", () => {
       key: contentKey,
       revision: 2,
       metadata: metadata.empty(true),
-      // Some random CID. This is a v1 CID of some version of this repo's rollup.config.ts file.
-      // Make sure you haven't accidentally added that when running the test
-      content: "bafkreic26wmegbdz5ke6eetajcx3efceowy6yxfp6v52id4gs7cszuzehu"
+      content: someRandomCID.toBaseEncodedString()
     }
     const privateFileAddResult = await adverserialAddNode(tree.mmpt, privateFileHeader, key)
     directory.updateLink(filename, privateFileAddResult)
