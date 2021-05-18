@@ -30,37 +30,55 @@ afterAll(async () => {
 
 describe("the filsystem", () => {
   it("has expected namefilter structure", async () => {
+    // Construct a root tree with a known root key
     const rootKey = await crypto.aes.genKeyStr()
     const tree = await RootTree.empty({ rootKey })
 
-    const filePath = path.file("private", "test.txt")
+    // Add a file at private/test.txt and
+    // 1. Get the PrivateFile reference to test.txt
+    // 2. Get the PrivateTree reference to private/
+    const filename = "test.txt"
+
+    const filePath = path.file("private", filename)
     const [privatePath, privateTree] = tree.findPrivateTree(filePath)
     const subPath = path.unwrap(filePath).slice(path.unwrap(privatePath).length)
     await privateTree.write(subPath, "lol")
     const file: PrivateFile = await privateTree.read(subPath) as any
 
-    const rootNameFilter = await namefilter.createBare(rootKey)
-    const fileNameFilter = await namefilter.addToBare(rootNameFilter, file.header.key)
-    const revisionFilter = await namefilter.addRevision(fileNameFilter, file.header.key, 1)
+    // We manually replicate what we think the namefilters should look like for
+    // 1. rootBareFilter: The bare namefilter for the private/ directory
+    // 2. fileBareFilter: The bare namefilter for the test.txt file *header*
+    // 3. contentBareFilter: The bare namefilter for the test.txt file *content*
+    // And their revisioned versions.
+    const rootBareFilter = await namefilter.createBare(rootKey)
+    const fileBareFilter = await namefilter.addToBare(rootBareFilter, file.key)
+    const fileRevisionFilter = await namefilter.addRevision(fileBareFilter, file.key, 1)
+    const contentBareFilter = await namefilter.addToBare(fileBareFilter, file.header.key)
+    const contentRevisionFilter = await namefilter.addRevision(contentBareFilter, file.header.key, 1)
 
-    expect(rootNameFilter).toEqual(privateTree.header.bareNameFilter)
-    expect(fileNameFilter).toEqual(file.header.bareNameFilter)
+    // We make sure that they 100% match the namefilter caches in PrivateTree & PrivateFile
+    expect(rootBareFilter).toEqual(privateTree.header.bareNameFilter)
+    expect(fileBareFilter).toEqual(file.header.bareNameFilter)
 
-    const bloomFilter = namefilter.fromHex(fileNameFilter)
-    expect(bloomFilter.has(await crypto.hash.sha256Str(rootKey))).toEqual(true)
-    expect(bloomFilter.has(await crypto.hash.sha256Str(file.header.key))).toEqual(true)
-    expect(bloomFilter.has(await crypto.hash.sha256Str(file.key))).toEqual(true)
+    // We now check that the "spine" of the file is contained in the namefilter completely
+    const fileBloomFilter = namefilter.fromHex(fileBareFilter)
+    expect(fileBloomFilter.has(await crypto.hash.sha256Str(rootKey))).toEqual(true)
+    expect(fileBloomFilter.has(await crypto.hash.sha256Str(file.key))).toEqual(true)
+    // and that the content key is explicitly not contained. Statistically false positives can happen
+    expect(fileBloomFilter.has(await crypto.hash.sha256Str(file.header.key))).toEqual(false) // in most cases
 
-    const cid = await tree.mmpt.get(await namefilter.toPrivateName(revisionFilter))
+    // We check that the "spine" of the file *content* is contained in the namefilter.
+    const contentBloomFilter = namefilter.fromHex(contentBareFilter)
+    expect(contentBloomFilter.has(await crypto.hash.sha256Str(rootKey))).toEqual(true)
+    expect(contentBloomFilter.has(await crypto.hash.sha256Str(file.key))).toEqual(true)
+    expect(contentBloomFilter.has(await crypto.hash.sha256Str(file.header.key))).toEqual(true)
 
-    expect(cid).toEqual(file.header.content)
+    // We can also make sure that the mmpt is up-to-date and refers to the CIDs we expect
+    const mmptFileCID = await tree.mmpt.get(await namefilter.toPrivateName(fileRevisionFilter))
+    const mmptContentCID = await tree.mmpt.get(await namefilter.toPrivateName(contentRevisionFilter))
 
-    const headerNameFilter = await namefilter.addRevision(fileNameFilter, file.key, 1)
-    const headerCID = await tree.mmpt.get(await namefilter.toPrivateName(headerNameFilter))
-
-    expect(headerCID).toEqual(privateTree.header.skeleton["test.txt"].cid)
-
-    expect(file.content).toEqual("lol")
+    expect(mmptFileCID).toEqual(privateTree.header.skeleton[filename].cid)
+    expect(mmptContentCID).toEqual(file.header.content)
   })
 
   it("handles non-corrupt filesystems", async () => {

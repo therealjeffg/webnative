@@ -99,7 +99,7 @@ export class PrivateFile extends BaseFile {
   }
 
   async updateParentNameFilter(parentNameFilter: BareNameFilter): Promise<this> {
-    this.header.bareNameFilter = await namefilter.addToBare(parentNameFilter, this.header.key)
+    this.header.bareNameFilter = await namefilter.addToBare(parentNameFilter, this.key)
     return this
   }
 
