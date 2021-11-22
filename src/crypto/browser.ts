@@ -1,6 +1,6 @@
 import tweetnacl from "tweetnacl"
+import * as uint8arrays from "uint8arrays"
 import rsaOperations from "keystore-idb/lib/rsa/index.js"
-import utils from "keystore-idb/lib/utils.js"
 
 import { assertBrowser } from "../common/browser.js"
 import * as keystore from "../keystore.js"
@@ -8,7 +8,7 @@ import * as keystore from "../keystore.js"
 
 export const rsaVerify = (message: Uint8Array, signature: Uint8Array, publicKey: Uint8Array): Promise<boolean> => {
   assertBrowser("rsa.verify")
-  const keyStr = utils.arrBufToBase64(publicKey.buffer)
+  const keyStr = uint8arrays.toString(publicKey, "base64pad")
   return rsaOperations.verify(message, signature, keyStr)
 }
 
@@ -34,10 +34,10 @@ export const ksDecrypt = async (encrypted: string): Promise<string> => {
   return ks.decrypt(encrypted)
 }
 
-export const ksSign = async (message: string, charSize: number): Promise<string> => {
+export const ksSign = async (message: string): Promise<string> => {
   assertBrowser("keystore.sign")
   const ks = await keystore.get()
-  return ks.sign(message, { charSize })
+  return ks.sign(message)
 }
 
 export const ksImportSymmKey = async (key: string, name: string): Promise<void> => {

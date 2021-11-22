@@ -12,7 +12,7 @@ export function publicKeyToDid(
   publicKey: string,
   type: KeyType
 ): string {
-  const pubKeyBuf = utils.base64ToArrBuf(publicKey)
+  const pubKeyBuf = uint8arrays.fromString(publicKey, "base64")
 
   // Prefix public-write key
   const prefix = magicBytes(type)
@@ -20,10 +20,10 @@ export function publicKeyToDid(
     throw new Error(`Key type '${type}' not supported`)
   }
 
-  const prefixedBuf = utils.joinBufs(prefix, pubKeyBuf)
+  const prefixedBuf = uint8arrays.concat([prefix, pubKeyBuf])
 
   // Encode prefixed
-  return BASE58_DID_PREFIX + uint8arrays.toString(new Uint8Array(prefixedBuf), "base58btc")
+  return BASE58_DID_PREFIX + uint8arrays.toString(prefixedBuf, "base58btc")
 }
 
 /**
@@ -42,7 +42,7 @@ export function didToPublicKey(did: string): {
   const { keyBuffer, type } = parseMagicBytes(magicalBuf)
 
   return {
-    publicKey: utils.arrBufToBase64(keyBuffer),
+    publicKey: uint8arrays.toString(keyBuffer, "base64pad"),
     type
   }
 }

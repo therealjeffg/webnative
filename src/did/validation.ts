@@ -1,3 +1,5 @@
+import * as uint8arrays from "uint8arrays"
+
 import * as crypto from "../crypto/index.js"
 import * as utils from "keystore-idb/lib/utils.js"
 import { didToPublicKey } from "./transformers.js"
@@ -7,8 +9,7 @@ import { KeyType } from "./types.js"
 /**
  * Verify the signature of some data (string, ArrayBuffer or Uint8Array), given a DID.
  */
-export async function verifySignedData({ charSize = 16, data, did, signature }: {
-  charSize?: number
+export async function verifySignedData({ data, did, signature }: {
   data: string
   did: string
   signature: string
@@ -16,9 +17,9 @@ export async function verifySignedData({ charSize = 16, data, did, signature }: 
   try {
     const { type, publicKey } = didToPublicKey(did)
 
-    const sigBytes = new Uint8Array(utils.base64ToArrBuf(signature))
-    const dataBytes = new Uint8Array(utils.normalizeUnicodeToBuf(data, charSize))
-    const keyBytes = new Uint8Array(utils.base64ToArrBuf(publicKey))
+    const sigBytes = uint8arrays.fromString(signature, "base64pad")
+    const dataBytes = utils.normalizeAssumingUtf8(data)
+    const keyBytes = uint8arrays.fromString(publicKey, "base64pad")
 
     switch (type) {
 

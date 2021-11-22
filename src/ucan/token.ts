@@ -162,7 +162,6 @@ export function isExpired(ucan: Ucan): boolean {
   const encodedPayload = encodePayload(ucan.payload)
 
   const a = await verifySignedData({
-    charSize: 8,
     data: `${encodedHeader}.${encodedPayload}`,
     did: ucan.payload.iss,
     signature: base64.makeUrlUnsafe(ucan.signature || "")
