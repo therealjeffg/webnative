@@ -1,4 +1,4 @@
-import { build } from "https://deno.land/x/dnt/mod.ts";
+import { build } from "https://deno.land/x/dnt@0.22.0/mod.ts";
 
 const VERSION = Deno.args[ 0 ];
 if (!VERSION) throw new Error("Couldn't parse version argument.");
@@ -31,7 +31,7 @@ await build({
     exports: {
       "./*": {
         "import": "./esm/*",
-        "require": "./umd/*",
+        "require": "./script/*",
         "types": "./types/*",
       },
     },
