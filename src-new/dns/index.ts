@@ -19,8 +19,8 @@ export function dnsOverHttps(url: string): Promise<string | null> {
       if (r.Answer) {
         // Remove double-quotes from beginning and end of the resulting string (if present)
         const answers: Array<string> = r.Answer.map((a: { data: string }) => {
-          return (a.data || "").replace(/^"+|"+$/g, "");
-        });
+          return (a.data || "").replace(/^"+|"+$/g, "")
+        })
 
         // Sort by prefix, if prefix is present,
         // and then add the answers together as one string.
@@ -28,14 +28,14 @@ export function dnsOverHttps(url: string): Promise<string | null> {
           return answers
             .sort((a, b) => a.slice(0, 4).localeCompare(b.slice(0, 4)))
             .map((a) => a.slice(4))
-            .join("");
+            .join("")
         } else {
-          return answers.join("");
+          return answers.join("")
         }
       } else {
-        return null;
+        return null
       }
-    });
+    })
 }
 
 //////////////////////////////////////////
@@ -51,7 +51,7 @@ export function dnsOverHttps(url: string): Promise<string | null> {
 export function cloudflareLookup(domain: string): Promise<string | null> {
   return dnsOverHttps(
     `https://cloudflare-dns.com/dns-query?name=${domain}&type=txt`,
-  );
+  )
 }
 
 /**
@@ -61,7 +61,7 @@ export function cloudflareLookup(domain: string): Promise<string | null> {
  * @returns Contents of the TXT record.
  */
 export function googleLookup(domain: string): Promise<string | null> {
-  return dnsOverHttps(`https://dns.google/resolve?name=${domain}&type=txt`);
+  return dnsOverHttps(`https://dns.google/resolve?name=${domain}&type=txt`)
 }
 
 /**
@@ -73,11 +73,11 @@ export function googleLookup(domain: string): Promise<string | null> {
 export async function lookupDnsLink(domain: string): Promise<string | null> {
   const txt = await lookupTxtRecord(
     domain.startsWith("_dnslink.") ? domain : `_dnslink.${domain}`,
-  );
+  )
 
   return txt && !txt.includes("/ipns/")
     ? txt.replace(/^dnslink=/, "").replace(/^\/ipfs\//, "")
-    : null;
+    : null
 }
 
 /**
@@ -92,5 +92,5 @@ export function lookupTxtRecord(domain: string): Promise<string | null> {
   return Promise.any([
     googleLookup(domain),
     cloudflareLookup(domain),
-  ]);
+  ])
 }

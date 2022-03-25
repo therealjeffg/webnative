@@ -8,6 +8,7 @@ docs:
 	mkdir docs
 	deno doc --json --unstable --import-map {{deno-imports}} {{src}}/index.ts > docs/webnative.json
 
+# Might not be necessary: (only used for editor integration)
 install-deps:
 	deno cache {{deno-opts}} {{src}}/**/*.ts
 	deno cache {{deno-opts}} scripts/*.ts

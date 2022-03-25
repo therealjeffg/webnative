@@ -12,7 +12,7 @@ Fission helps developers build and scale their apps. We’re building a web nati
 
 ---
 
-**[Read the Guide for extended documentation and getting started information](https://guide.fission.codes/developers/webnative)**.  
+**[Read the Guide for extended documentation and getting started information](https://guide.fission.codes/developers/webnative)**.
 The API reference can be found at [webnative.fission.app](https://webnative.fission.app)
 
 ---
@@ -20,9 +20,9 @@ The API reference can be found at [webnative.fission.app](https://webnative.fiss
 ## What you'll find here
 
 The Fission webnative SDK offers tools for:
-- authenticating through a Fission **authentication lobby**  
+- authenticating through a Fission **authentication lobby**
   (a lobby is where you can make a Fission account or link an account)
-- managing your web native **file system**  
+- managing your web native **file system**
   (this is where a user's data lives)
 - tools for building DIDs and UCANs.
 - interacting with the users apps via the **platform APIs**
@@ -173,23 +173,5 @@ file.history.prior(1606236743)
 # Development
 
 ```
-# install dependencies
-yarn
-
-# run development server
-yarn start
-
-# build
-yarn build
-
-# test
-yarn test:prod
-yarn test:unit
-
-# generate docs
-yarn docs
-
-# publish
-yarn publish-latest
-yarn publish-alpha
+just package
 ```

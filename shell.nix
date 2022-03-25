@@ -10,6 +10,7 @@ in
     buildInputs = [
 
       unstable.deno
+      unstable.dprint
       unstable.just
       unstable.niv
 

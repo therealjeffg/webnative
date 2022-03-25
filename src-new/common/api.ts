@@ -1,6 +1,9 @@
-import * as dns from "../dns/index.js"
-import { setup } from "../setup/internal.js"
+import * as dns from "../dns/index.ts"
+import { setup } from "../setup/internal.ts"
 
+//
+// 🏷
+//
 
 const didCache: {
   did: string | null
@@ -12,6 +15,9 @@ const didCache: {
   lastFetched: 0,
 }
 
+//
+// 🛠
+//
 
 /**
  * Lookup the DID of a Fission API.
@@ -21,14 +27,14 @@ export async function did(): Promise<string> {
   let host
   try {
     host = new URL(setup.getApiEndpoint()).host
-  } catch (e) {
+  } catch (_err) {
     throw new Error("Unable to parse API Endpoint")
   }
   const now = Date.now() // in milliseconds
 
   if (
-    didCache.host !== host ||
-    didCache.lastFetched + 1000 * 60 * 60 * 3 <= now
+    didCache.host !== host
+    || didCache.lastFetched + 1000 * 60 * 60 * 3 <= now
   ) {
     didCache.did = await dns.lookupTxtRecord("_did." + host)
     didCache.host = host

@@ -2,9 +2,20 @@
   "imports": {
     "/": "./src-new/",
     "./": "./",
+    "crypto": "https://deno.land/std@0.131.0/crypto/mod.ts",
+    "ed25519": "https://esm.sh/@stablelib/ed25519@1.0.x",
+    "guards": "https://deno.land/x/guards@0.2.x",
+    "guards/": "https://deno.land/x/guards@0.2.x/",
+    "keystore-idb": "https://esm.sh/keystore-idb@0.15.x",
+    "keystore-idb/": "https://esm.sh/keystore-idb@0.15.x/",
+    "monads": "https://deno.land/x/monads@0.5.x/mod.ts",
+    "monads/": "https://deno.land/x/monads@0.5.x/",
+    "multiformats": "https://esm.sh/multiformats@9.6.x",
+    "multiformats/": "https://esm.sh/multiformats@9.6.x/",
+    "ucans": "https://esm.sh/ucans@0.8.x",
+    "ucans/": "https://esm.sh/ucans@0.8.x/",
+    "uint8arrays": "https://esm.sh/uint8arrays@3.0.x",
     "webnative": "./src-new/index.ts",
-    "webnative/": "./src-new/",
-    "monads": "https://deno.land/x/monads/mod.ts",
-    "monads/": "https://deno.land/x/monads/"
+    "webnative/": "./src-new/"
   }
 }

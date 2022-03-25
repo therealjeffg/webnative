@@ -1,7 +1,5 @@
-import * as crypto from "../crypto/index.js"
-import { publicKeyToDid } from "./transformers.js"
-import { toKeyType } from "./util.js"
-
+import { publicKeyToDid } from "ucans/dist/did"
+import * as crypto from "../crypto/index.ts"
 
 /**
  * Create a DID based on the exchange key-pair.
@@ -12,7 +10,7 @@ export async function exchange(): Promise<string> {
 
   return publicKeyToDid(
     pubKeyB64,
-    toKeyType(ksAlg)
+    crypto.keyTypeFromSystem(ksAlg),
   )
 }
 
@@ -30,6 +28,6 @@ export async function write(): Promise<string> {
 
   return publicKeyToDid(
     pubKeyB64,
-    toKeyType(ksAlg)
+    crypto.keyTypeFromSystem(ksAlg),
   )
 }
